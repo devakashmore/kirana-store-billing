@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: kirana-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kirana_admin
+      POSTGRES_PASSWORD: 260711
+      POSTGRES_DB: kirana_billing
+    ports:
+      - "5433:5432"
+    volumes:
+      - kirana_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U kirana_admin -d kirana_billing" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  kirana_postgres_data:

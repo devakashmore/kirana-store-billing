@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  CASHIER
+}
+
+enum OtpPurpose {
+  LOGIN
+  PASSWORD_RESET
+}
+
+model Store {
+  id                        String   @id @default(uuid()) @db.Uuid
+  name                      String   @db.VarChar(150)
+  sessionIdleTimeoutMinutes Int      @default(30)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  users User[]
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  storeId      String   @db.Uuid
+  name         String   @db.VarChar(150)
+  mobile       String?  @unique @db.VarChar(16)
+  email        String?  @unique @db.VarChar(254)
+  passwordHash String   @db.VarChar(255)
+  role         UserRole @default(CASHIER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  store           Store            @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  refreshSessions RefreshSession[]
+  otpChallenges   OtpChallenge[]
+
+  @@index([storeId, role])
+  @@index([storeId, isActive])
+}
+
+model RefreshSession {
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              String    @db.Uuid
+  tokenHash           String    @unique @db.VarChar(255)
+  familyId            String    @db.Uuid
+  expiresAt           DateTime
+  lastActivityAt      DateTime  @default(now())
+  revokedAt           DateTime?
+  replacedBySessionId String?   @db.Uuid
+  userAgent           String?   @db.VarChar(500)
+  ipAddress           String?   @db.VarChar(45)
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+model OtpChallenge {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String?    @db.Uuid
+  identifier String     @db.VarChar(254)
+  purpose    OtpPurpose
+  codeHash   String     @db.VarChar(255)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([identifier, purpose])
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
