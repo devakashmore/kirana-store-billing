@@ -1,4 +1,4 @@
-# KiranaFlow 🚀
+# StorePilot(kirana-store-billing)
 ### Smart Billing. Simple Business.
 
 KiranaFlow is a modern, scalable billing and store management system designed for small retail businesses, especially Kirana stores.
