@@ -51,6 +51,9 @@ app.use("/api", apiLimiter);
 // API Routes
 app.use("/api/v1/health", healthRoutes);
 
+import authRoutes from "./modules/auth/auth.routes.js";
+app.use("/api/v1/auth", authRoutes);
+
 // Handle unknown routes
 app.use(notFoundMiddleware);
 
