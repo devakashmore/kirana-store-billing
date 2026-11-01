@@ -1,5 +1,6 @@
+import { email } from "zod";
 import { prisma } from "../../config/database.js";
-import { hashPassword } from "../../utils/password.js";
+import { hashPassword, comparePassword } from "../../utils/password.js";
 
 
 export async function registerOwner(data) {
@@ -80,7 +81,52 @@ export async function registerOwner(data) {
         }
 
         throw error;
-    
+
+    }
+
 }
 
+// Find the owner using their email or mobile number.
+// Reject inactive or nonexistent accounts.
+// Verify the password using bcrypt.
+// Return safe user details without exposing the password hash.
+
+export async function loginUser(data) {
+    const { identifier, password } = data;
+    const normalizedIdentifier = identifier.includes("@") ?
+        identifier.toLowerCase() :
+        identifier;
+
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { email: normalizedIdentifier },
+                { mobile: normalizedIdentifier }
+            ]
+        }
+    });
+
+    if (!user || !user.isActive) {
+        const error = new Error("Invalid email/mobile number or password.");
+        error.statusCode = 401;
+        throw error;
+    }
+
+    const isPasswordValid = await comparePassword(password, user.passwordHash);
+
+    if (!isPasswordValid) {
+        const error = new Error("Invalid email/mobile number or password.");
+        error.statusCode = 401;
+        throw error;
+    }
+
+    return {
+        id: user.id,
+        storeId: user.storeId,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        role: user.role,
+        isActive: user.isActive
+    };
 }

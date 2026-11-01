@@ -54,3 +54,35 @@ describe("Owner Registration Validation", () => {
         expect(result.success).toBe(false);
     });
 });
+
+
+import { loginSchema } from "./auth.validation.js";
+
+describe("loginSchema", () => {
+  it("accepts valid login credentials", () => {
+    const result = loginSchema.safeParse({
+      identifier: "owner@example.com",
+      password: "StrongPassword123!"
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty identifier", () => {
+    const result = loginSchema.safeParse({
+      identifier: "",
+      password: "StrongPassword123!"
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an empty password", () => {
+    const result = loginSchema.safeParse({
+      identifier: "owner@example.com",
+      password: ""
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
