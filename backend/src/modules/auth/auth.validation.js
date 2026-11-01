@@ -42,3 +42,12 @@ export const ownerRegistrationSchema = z.object({
         })
     }
 })
+
+
+export const loginSchema = z.object({
+    identifier: z.string().trim().min(1, "Email or mobile number is required").max(254),
+    password: z.string().min(1, "Password is required").refine(
+        (value) => Buffer.byteLength(value, "utf8") <= 72,
+        "Password cannot exceed 72 bytes"
+    )
+})
