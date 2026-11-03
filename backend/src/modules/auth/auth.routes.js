@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { registerOwnerController, loginController } from "./auth.controller.js";
+import {
+    registerOwnerController,
+    loginController,
+    refreshController,
+    logoutController,
+    getMeController
+}
+    from "./auth.controller.js";
 import { ownerRegistrationSchema, loginSchema } from "./auth.validation.js";
 import { authenticate } from "../../middlewares/auth.middleware.js"
 
@@ -43,7 +50,9 @@ router.post("/login", (req, res, next) => {
 }, loginController);
 
 // protected testing route
-router.get("/protected-test",authenticate,  (req, res, next) => {
+router.get("/protected-test", authenticate, (req, res, next) => {
+
+
 
     return res.status(200).json({
         success: true,
@@ -51,5 +60,14 @@ router.get("/protected-test",authenticate,  (req, res, next) => {
         user: req.user
     });
 });
+
+
+router.post("/refresh", refreshController);
+
+// me
+router.get("/me", authenticate, getMeController);
+
+// logout
+router.post("/logout", logoutController);
 
 export default router;
